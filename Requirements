@@ -1,0 +1,62 @@
+CloudFormation template in YAML.- yp-network-tgw-nfw-ram
+Need below resources to be deployed in ca-central-1 -
+
+1. Create a Transit Gateway (yp-org-tgw-hub)
+
+2. Create below VPCs:
+
+  1. vpc-inspection (172.18.0.0/24) with 3 subnets each in 2 AZs (az1 and az2)
+     public (snet-inspection-internet) with /28 CIDR 172.18.0.0/28 (az1) 172.18.0.16/28 (az2)
+     private (snet-inspection-nfw) with /27 CIDR 172.18.0.32/27 (az1) 172.18.0.64/27 (az2)
+     private (snet-inspection-attachment) with /28 CIDR 172.18.0.96/28 (az1) 172.18.0.112/28 (az2)
+     create cloudwatch log group vpc-inspection-log-group and attach flow logs to it
+	
+  2. vpc-dns (172.18.1.0/24) with 2 subnets each in 2 AZs (az1 and az2)
+     private (snet-dns-attachment) with /28 CIDR 172.18.1.0/28 (az1) 172.18.1.16/28 (az2)
+     private (snet-dns-endpoints) with /27 CIDR 172.18.1.32/27 (az1) 172.18.1.64/27 (az2)
+     create cloudwatch log group vpc-dns-log-group and attach flow logs to it
+
+  3. vpc-endpoints (172.18.2.0/24) with 2 subnets each in 2 AZs (az1 and az2)
+     private (snet-endpoints) with /26 CIDR 172.18.2.0/26 (az1) 172.18.2.64/26 (az2)
+     private (snet-endpoints-attachment) with /28 CIDR 172.18.2.128/28 (az1) 172.18.2.144/28 (az2)
+     create cloudwatch log group vpc-endpoints-log-group and attach flow logs to it
+
+  4. vpc-dev01 (172.18.8.0/21) with 4 subnets each in 2 AZs (az1 and az2)
+     Below are for az-1     
+     private (snet-dev01-dmz) with CIDR 172.18.8.0/24
+     private (snet-dev01-middleware) with CIDR 172.18.9.0/24
+     private (snet-dev01-backend) with CIDR 172.18.10.0/24
+     private (snet-dev01-service) with CIDR 172.18.11.0/24
+     
+     Below are for az-2     
+     private (snet-dev01-dmz) with CIDR 172.18.12.0/24
+     private (snet-dev01-middleware) with CIDR 172.18.13.0/24
+     private (snet-dev01-backend) with CIDR 172.18.14.0/24
+     private (snet-dev01-service) with CIDR 172.18.15.0/24
+     create cloudwatch log group vpc-dev01-log-group and attach flow logs to it
+
+  5. vpc-sit01 (172.18.16.0/21) with 4 subnets each in 2 AZs (az1 and az2)
+     Below are for az-1     
+     private (snet-sit01-dmz) with CIDR 172.18.16.0/24
+     private (snet-sit01-middleware) with CIDR 172.18.17.0/24
+     private (snet-sit01-backend) with CIDR 172.18.18.0/24
+     private (snet-sit01-service) with CIDR 172.18.19.0/24
+     
+     Below are for az-2     
+     private (snet-sit01-dmz) with CIDR 172.18.20.0/24
+     private (snet-sit01-middleware) with CIDR 172.18.21.0/24
+     private (snet-sit01-backend) with CIDR 172.18.22.0/24
+     private (snet-sit01-service) with CIDR 172.18.23.0/24
+     create cloudwatch log group vpc-sit01-log-group and attach flow logs to it
+
+Append all subnet names with the AZ where it is created.
+for example- snet-dns-endpoints-ca-central-1a
+
+3. Create a VPN (yp-vpn-network) with customer gateway 
+   type- ipsec.1., BgpAsn: 65000 ,IpAddress: 209.171.44.147
+
+
+4. Create a network firewall (yp-network-firewall) in the vpc-inspection
+   choose each subnet from az1 and az2 from this vpc
+
+5. Using AWS RAM, need to share the subnets in vpc-dev01 and vpc-sit01 with AWS account which will be created later
